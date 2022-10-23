@@ -13,8 +13,11 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import Badge from '@mui/material/Badge';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import { useAppSelector } from 'redux/hooks';
 
 const Navbar = () => {
+  const { quantity } = useAppSelector(({ cart }) => cart);
+
   return (
     <Container>
       <Wrapper>
@@ -32,7 +35,7 @@ const Navbar = () => {
           <MenuItem>Register</MenuItem>
           <MenuItem>Sign In</MenuItem>
           <MenuItem>
-            <Badge badgeContent={1} color="primary">
+            <Badge badgeContent={quantity} color="primary">
               <ShoppingCartOutlinedIcon />
             </Badge>
           </MenuItem>

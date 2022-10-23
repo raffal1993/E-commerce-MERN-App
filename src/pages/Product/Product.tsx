@@ -4,6 +4,11 @@ import Announcement from 'components/Announcement/Announcement';
 import Footer from 'components/Footer/Footer';
 import Navbar from 'components/Navbar/Navbar';
 import Newsletter from 'components/Newsletter/Newsletter';
+import useFetchProducts from 'hooks/useFetchProducts';
+import { ChangeEvent, MouseEvent, useEffect, useState } from 'react';
+import { addProduct } from 'redux/cart';
+import { useAppDispatch } from 'redux/hooks';
+import { v4 as uuidv4 } from 'uuid';
 import {
   AddContainer,
   Amount,
@@ -25,48 +30,87 @@ import {
 } from './Product.styled';
 
 const Product = () => {
+  const { product } = useFetchProducts();
+  const { img, title, price, desc, color, size } = product || {};
+
+  const [quantity, setQuantity] = useState(1);
+  const [pickColorIndex, setPickColorIndex] = useState(0);
+  const [pickSize, setPickSize] = useState('');
+
+  const dispatch = useAppDispatch();
+
+  const handleQuantity = (type: 'decrease' | 'increase') => {
+    type === 'increase' && setQuantity((prev) => ++prev);
+    type === 'decrease' && quantity > 1 && setQuantity((prev) => --prev);
+  };
+
+  const handlePickSize = (e: ChangeEvent<HTMLSelectElement>) => {
+    setPickSize(e.currentTarget.value);
+  };
+  const handlePickColorIndex = (_e: MouseEvent<HTMLDivElement>, index: number) => {
+    setPickColorIndex(index);
+  };
+
+  const handleAddToCart = () => {
+    const isProduct = size && color && price && product;
+    isProduct &&
+      dispatch(
+        addProduct({
+          product: {
+            ...product,
+            color: [color[pickColorIndex]],
+            size: [pickSize],
+            quantity,
+          },
+          price: price * quantity,
+        }),
+      );
+  };
+
+  useEffect(() => {
+    setPickSize((size && size[0]) || '');
+  }, [size]);
+
   return (
     <Container>
       <Navbar />
       <Announcement />
       <Wrapper>
         <ImgContainer>
-          <Image src="https://i.ibb.co/S6qMxwr/jean.jpg" />
+          <Image src={img} alt={title || 'Image'} />
         </ImgContainer>
         <InfoContainer>
-          <Title>Denim Jumpsuit</Title>
-          <Desc>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec venenatis, dolor in
-            finibus malesuada, lectus ipsum porta nunc, at iaculis arcu nisi sed mauris. Nulla
-            fermentum vestibulum ex, eget tristique tortor pretium ut. Curabitur elit justo,
-            consequat id condimentum ac, volutpat ornare.
-          </Desc>
-          <Price>$ 20</Price>
+          <Title>{title}</Title>
+          <Desc>{desc}</Desc>
+          <Price>$ {price}</Price>
           <FilterContainer>
             <Filter>
               <FilterTitle>Color</FilterTitle>
-              <FilterColor color="black" />
-              <FilterColor color="darkblue" />
-              <FilterColor color="gray" />
+              {color &&
+                color.map((item, index) => (
+                  <FilterColor
+                    className={pickColorIndex === index ? 'active' : undefined}
+                    onClick={(e) => handlePickColorIndex(e, index)}
+                    key={uuidv4()}
+                    color={item}
+                  />
+                ))}
             </Filter>
             <Filter>
               <FilterTitle>Size</FilterTitle>
-              <FilterSize>
-                <FilterSizeOption>XS</FilterSizeOption>
-                <FilterSizeOption>S</FilterSizeOption>
-                <FilterSizeOption>M</FilterSizeOption>
-                <FilterSizeOption>L</FilterSizeOption>
-                <FilterSizeOption>XL</FilterSizeOption>
+              <FilterSize value={pickSize} onChange={handlePickSize}>
+                {size &&
+                  size.map((item) => <FilterSizeOption key={uuidv4()}>{item}</FilterSizeOption>)}
               </FilterSize>
             </Filter>
           </FilterContainer>
           <AddContainer>
             <AmountContainer>
-              <Remove />
-              <Amount>1</Amount>
-              <Add />
+              <Remove onClick={() => handleQuantity('decrease')} />
+              <Amount>{quantity}</Amount>
+              <Add onClick={() => handleQuantity('increase')} />
             </AmountContainer>
-            <Button>ADD TO CART</Button>
+            <Button onClick={handleAddToCart}>ADD TO CART</Button>
           </AddContainer>
         </InfoContainer>
       </Wrapper>
