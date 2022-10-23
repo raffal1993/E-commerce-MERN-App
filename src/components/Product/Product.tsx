@@ -3,22 +3,26 @@ import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import React, { FC } from 'react';
 import { Container, Icon, Image, Info } from './Product.styled';
+import { Link } from 'react-router-dom';
 
 interface ProductProps {
-  id: number;
   img: string;
+  title: string;
+  _id: string;
 }
 
-const Product: FC<ProductProps> = ({ id, img }) => {
+const Product: FC<ProductProps> = ({ img, title, _id }) => {
   return (
     <Container>
-      <Image src={img} />
+      <Image src={img} alt={title} />
       <Info>
         <Icon>
           <ShoppingCartOutlined />
         </Icon>
         <Icon>
-          <SearchOutlined />
+          <Link to={`/product/${_id}`}>
+            <SearchOutlined />
+          </Link>
         </Icon>
         <Icon>
           <FavoriteBorderOutlined />
